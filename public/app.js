@@ -1,5 +1,28 @@
 // Frontend Logic for Passkey Usability Study
 
+// Environment configuration for Vercel/Production deployment
+document.addEventListener('DOMContentLoaded', () => {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (!isLocal) {
+    const demoToggle = document.getElementById('demoModeContainer');
+    if (demoToggle) {
+      demoToggle.style.display = 'none';
+    }
+    const footerVersion = document.getElementById('footerVersion');
+    if (footerVersion) {
+      footerVersion.innerHTML = 'WebAuthn API Core Framework';
+    }
+    const demoModeToggle = document.getElementById('demoModeToggle');
+    if (demoModeToggle) {
+      demoModeToggle.checked = false;
+    }
+    const connectionStatus = document.getElementById('connectionStatus');
+    if (connectionStatus) {
+      connectionStatus.innerHTML = '<span class="status-dot green"></span><span>Secure Cloud Server</span>';
+    }
+  }
+});
+
 // Panel Modes: Guide vs. Developer
 const btnUserMode = document.getElementById('btnUserMode');
 const btnDevMode = document.getElementById('btnDevMode');
