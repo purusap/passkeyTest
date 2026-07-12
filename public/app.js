@@ -390,7 +390,7 @@ signupForm.addEventListener('submit', async (e) => {
       };
     } else {
       try {
-        attestationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: options });
+        attestationResponse = await SimpleWebAuthnBrowser.startRegistration(options);
       } catch (err) {
         console.error(err);
         throw new Error(`Browser authenticator prompt cancelled/failed: ${err.message}`);
@@ -494,7 +494,7 @@ loginForm.addEventListener('submit', async (e) => {
       };
     } else {
       try {
-        assertionResponse = await SimpleWebAuthnBrowser.startAuthentication({ optionsJSON: options });
+        assertionResponse = await SimpleWebAuthnBrowser.startAuthentication(options);
       } catch (err) {
         console.error(err);
         throw new Error(`Browser authenticator prompt cancelled/failed: ${err.message}`);
