@@ -38,12 +38,7 @@ app.use(
   })
 );
 
-// Serve SimpleWebAuthn browser bundle from node_modules statically
-app.use('/js/simplewebauthn-browser.js', (req, res) => {
-  res.sendFile(
-    path.join(__dirname, 'node_modules', '@simplewebauthn', 'browser', 'dist', 'bundle', 'index.umd.min.js')
-  );
-});
+
 
 // In-Memory Database (for testing / demo purposes)
 const users = new Map(); // username -> user object
@@ -408,10 +403,14 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(`  PASSKEY USABILITY STUDY SERVER RUNNING          `);
-  console.log(`  Access the lab: http://localhost:${PORT}        `);
-  console.log(`==================================================`);
-});
+// Start server if not running in a Serverless environment (like Vercel)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`==================================================`);
+    console.log(`  PASSKEY USABILITY STUDY SERVER RUNNING          `);
+    console.log(`  Access the lab: http://localhost:${PORT}        `);
+    console.log(`==================================================`);
+  });
+}
+
+export default app;
