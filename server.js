@@ -16,13 +16,21 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const RP_ID = 'localhost';
 const RP_NAME = 'Passkey Usability Study Lab';
-const ORIGIN = `http://localhost:${PORT}`;
+
+// Dynamic host/origin helpers for WebAuthn (required for Vercel/serverless environments)
+function getRPID(req) {
+  return req.hostname;
+}
+
+function getOrigin(req) {
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  return `${protocol}://${req.get('host')}`;
+}
 
 // Middleware
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Configure sessions to store WebAuthn challenges
 app.use(
@@ -124,7 +132,7 @@ app.post('/api/register/options', async (req, res) => {
   try {
     const options = await generateRegistrationOptions({
       rpName: RP_NAME,
-      rpID: RP_ID,
+      rpID: getRPID(req),
       userID: new TextEncoder().encode(userID),
       userName: username,
       userDisplayName: username,
@@ -195,8 +203,8 @@ app.post('/api/register/verify', async (req, res) => {
     const verification = await verifyRegistrationResponse({
       response,
       expectedChallenge: currentChallenge,
-      expectedOrigin: ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin: getOrigin(req),
+      expectedRPID: getRPID(req),
     });
 
     const { verified, registrationInfo } = verification;
@@ -263,7 +271,7 @@ app.post('/api/login/options', async (req, res) => {
 
   try {
     const options = await generateAuthenticationOptions({
-      rpID: RP_ID,
+      rpID: getRPID(req),
       allowCredentials,
       userVerification: 'preferred',
     });
@@ -337,8 +345,8 @@ app.post('/api/login/verify', async (req, res) => {
     const verification = await verifyAuthenticationResponse({
       response,
       expectedChallenge: currentChallenge,
-      expectedOrigin: ORIGIN,
-      expectedRPID: RP_ID,
+      expectedOrigin: getOrigin(req),
+      expectedRPID: getRPID(req),
       credential: {
         id: foundCred.credentialID,
         publicKey: Buffer.from(foundCred.credentialPublicKey, 'base64url'),
