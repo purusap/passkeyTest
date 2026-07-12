@@ -50,36 +50,7 @@ app.use(
 
 // In-Memory Database (for testing / demo purposes)
 const users = new Map(); // username -> user object
-const feedbackFile = path.join(__dirname, 'feedback.json');
 
-// Initialize feedback file if it doesn't exist
-if (!fs.existsSync(feedbackFile)) {
-  fs.writeFileSync(feedbackFile, JSON.stringify([], null, 2), 'utf-8');
-}
-
-// Utility to read/write feedback
-function getFeedback() {
-  try {
-    const data = fs.readFileSync(feedbackFile, 'utf-8');
-    return JSON.parse(data);
-  } catch (err) {
-    return [];
-  }
-}
-
-function saveFeedback(newFeedback) {
-  try {
-    const feed = getFeedback();
-    feed.push({
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      ...newFeedback,
-    });
-    fs.writeFileSync(feedbackFile, JSON.stringify(feed, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error saving feedback:', err);
-  }
-}
 
 /**
  * Endpoint: Get current session status
@@ -378,25 +349,7 @@ app.post('/api/login/verify', async (req, res) => {
 /**
  * Endpoint: Usability Feedback survey submission
  */
-app.post('/api/feedback', (req, res) => {
-  const { ratingEase, ratingSecurity, ratingTrust, feedbackText } = req.body;
 
-  if (!ratingEase || !ratingSecurity || !ratingTrust) {
-    return res.status(400).json({ error: 'All rating fields are required.' });
-  }
-
-  const username = req.session.loggedInUser || 'anonymous';
-  const survey = {
-    username,
-    ratingEase: parseInt(ratingEase, 10),
-    ratingSecurity: parseInt(ratingSecurity, 10),
-    ratingTrust: parseInt(ratingTrust, 10),
-    feedbackText: feedbackText || '',
-  };
-
-  saveFeedback(survey);
-  res.json({ success: true, message: 'Feedback saved successfully.' });
-});
 
 /**
  * Endpoint: Logout
