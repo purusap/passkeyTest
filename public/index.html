@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Passkey Usability Study & Interactive Lab</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background decorative glows -->
+  <div class="glow-bg glow-blue"></div>
+  <div class="glow-bg glow-purple"></div>
+
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="logo-area">
+        <span class="logo-icon">🔑</span>
+        <div>
+          <h1>Passkey Usability Lab</h1>
+          <p class="subtitle">A Usability Study of Passkeys for Authentication: A Comprehensive Look at the User Experience</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <label class="demo-toggle">
+          <input type="checkbox" id="demoModeToggle">
+          <span class="slider"></span>
+          <span class="toggle-label">Demo Mode (Simulate Biometrics)</span>
+        </label>
+        <div class="connection-status" id="connectionStatus">
+          <span class="status-dot green"></span>
+          <span>Secure Local Node</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-layout">
+    <!-- Left Column: User Interactive Sandbox -->
+    <section class="panel sandbox-panel">
+      <!-- Welcome Intro Section -->
+      <div id="introCard" class="card card-hero">
+        <h2>Interactive Passkey Sandbox</h2>
+        <p>Welcome to the passkey testing environment. Here, you can test how registration (signup) and assertion (login) feel in practice. Unlike passwords, passkeys use cryptography to sign a challenge from the server, eliminating phishing risks.</p>
+        <p class="study-note"><strong>Study Instructions:</strong> Try creating a new account first, then log out and log back in using your device's passkey authenticator (e.g. Windows Hello, TouchID, FaceID, or a USB security key).</p>
+      </div>
+
+      <!-- Auth Controls (Signed Out state) -->
+      <div id="authControls" class="auth-sections">
+        <!-- Signup Section -->
+        <div class="card" id="signupCard">
+          <div class="card-header">
+            <span class="step-badge">1</span>
+            <h2>Sign Up (Create Account)</h2>
+          </div>
+          <p class="card-desc">Create a username and bind it to a credential generated securely by your device's hardware.</p>
+          
+          <form id="signupForm" class="auth-form" onsubmit="event.preventDefault();">
+            <div class="input-group">
+              <label for="signupUsername">Username</label>
+              <input type="text" id="signupUsername" placeholder="e.g. alice, research_user" autocomplete="username" required>
+            </div>
+            <button type="submit" id="btnSignup" class="btn btn-primary">
+              <span class="btn-text">Register Passkey</span>
+              <span class="btn-icon">⚡</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Login Section -->
+        <div class="card" id="loginCard">
+          <div class="card-header">
+            <span class="step-badge">2</span>
+            <h2>Log In</h2>
+          </div>
+          <p class="card-desc">Authenticate instantly using your saved passkey. You can type your username to use specific keys, or perform a <strong>username-less login</strong> to let your device locate the correct key.</p>
+          
+          <form id="loginForm" class="auth-form" onsubmit="event.preventDefault();">
+            <div class="input-group">
+              <label for="loginUsername">Username (Optional)</label>
+              <input type="text" id="loginUsername" placeholder="Leave empty for username-less search" autocomplete="username">
+            </div>
+            <div class="btn-row">
+              <button type="submit" id="btnLogin" class="btn btn-secondary">
+                <span class="btn-text">Log In with Passkey</span>
+                <span class="btn-icon">🔓</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Dashboard (Signed In State - Hidden by default) -->
+      <div id="dashboardArea" class="auth-sections hidden">
+        <div class="card card-success">
+          <div class="dashboard-header">
+            <div>
+              <span class="success-badge">✓ Authenticated</span>
+              <h2 id="welcomeUser">Welcome back, User!</h2>
+            </div>
+            <button id="btnLogout" class="btn btn-outline">Log Out</button>
+          </div>
+          <div class="user-details">
+            <p><strong>User ID:</strong> <code id="userIdVal">uuid-string</code></p>
+            <p>You are successfully logged in using your Passkey! Your private key remains locked on your physical device, and only the corresponding public key was used for verification.</p>
+          </div>
+        </div>
+
+        <!-- Credentials List Card -->
+        <div class="card">
+          <h3>Your Registered Credentials</h3>
+          <p class="card-desc">This device has registered the following passkey credentials for this sandbox instance.</p>
+          <div class="table-container">
+            <table class="credentials-table">
+              <thead>
+                <tr>
+                  <th>Credential ID (Truncated)</th>
+                  <th>Counter</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody id="credentialsListBody">
+                <!-- Dynamic insertion -->
+              </tbody>
+            </table>
+          </div>
+          <div class="dashboard-actions">
+            <button id="btnRegisterAnother" class="btn btn-secondary btn-sm">Add Another Passkey Device</button>
+          </div>
+        </div>
+
+        <!-- Google Form Survey Link -->
+        <div class="card survey-card" id="surveyCard">
+          <div class="card-header">
+            <span class="step-badge">📝</span>
+            <h2>Usability Questionnaire</h2>
+          </div>
+          <p class="card-desc">Thank you for testing the passkey signup/login flow! To help with our research study, please click the link below to share your experience on our Google Form.</p>
+          <div style="margin-top: 16px;">
+            <a href="https://forms.google.com" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; width: 100%;">
+              <span class="btn-text">Open Google Form Survey</span>
+              <span class="btn-icon">🔗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Educational Flow Visualizer -->
+    <section class="panel info-panel">
+      <!-- Flow Steps -->
+      <div class="card visualizer-card">
+        <h3>Live Authentication Flow</h3>
+        <p class="card-desc text-muted">Watch the network sequence and cryptographic checkpoints update in real-time as you authenticate.</p>
+        
+        <div class="flow-diagram">
+          <!-- Flow Nodes -->
+          <div class="nodes-container">
+            <div class="node active" id="nodeBrowser">
+              <div class="node-icon">💻</div>
+              <div class="node-label">Browser</div>
+            </div>
+            <div class="flow-line-connector">
+              <div class="flow-signal" id="signal1"></div>
+            </div>
+            <div class="node" id="nodeAuthenticator">
+              <div class="node-icon">🔒</div>
+              <div class="node-label">Authenticator</div>
+            </div>
+            <div class="flow-line-connector">
+              <div class="flow-signal" id="signal2"></div>
+            </div>
+            <div class="node" id="nodeServer">
+              <div class="node-icon">☁️</div>
+              <div class="node-label">Server</div>
+            </div>
+          </div>
+
+          <!-- Description of active state -->
+          <div class="flow-state-desc" id="flowStateDesc">
+            <strong>Idle State</strong>: Waiting to start a Passkey registration or login.
+          </div>
+        </div>
+      </div>
+
+      <!-- Ceremony & Payload Monitor -->
+      <div class="card payload-card">
+        <div class="payload-header-modes">
+          <div class="panel-mode-selector">
+            <button class="mode-btn active" id="btnUserMode">📖 Participant Guide</button>
+            <button class="mode-btn" id="btnDevMode">🧑‍💻 Developer Console</button>
+          </div>
+          <div class="payload-actions">
+            <span class="console-indicator" id="consoleStatus">IDLE</span>
+            <button class="btn-clear" id="btnClearConsole">Clear</button>
+          </div>
+        </div>
+        
+        <!-- Tab 1: Participant User Guide (Visible by default) -->
+        <div class="mode-content active" id="userGuideArea">
+          <div class="guide-step-card">
+            <h4 id="guideStepTitle">Ready to Test</h4>
+            <p class="guide-step-desc" id="guideStepText">Enter a username on the left and click <strong>Register Passkey</strong> (or toggle <strong>Demo Mode</strong> to simulate it) to see a step-by-step explanation of how authentication occurs!</p>
+            
+            <div class="guide-insights">
+              <h5>💡 Security & Usability Insights</h5>
+              <ul class="insights-list" id="guideStepInsights">
+                <li><strong>No Passwords:</strong> You don't need to create or remember complex characters. Passkeys are stored directly on your device.</li>
+                <li><strong>Biometric Privacy:</strong> Your fingerprint, face scan, or PIN is processed locally on your device. The website and server never see it.</li>
+                <li><strong>Phishing Protection:</strong> Passkeys are cryptographically locked to this specific domain (localhost), protecting you from fake websites.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Developer Console Payload (Hidden by default) -->
+        <div class="mode-content hidden" id="devConsoleArea">
+          <p class="card-desc text-muted">View the exact JSON payloads exchanged under the hood during the WebAuthn ceremony.</p>
+
+          <div class="payload-tabs">
+            <button class="tab-btn active" data-tab="tabOptions">Server Options</button>
+            <button class="tab-btn" data-tab="tabResponse">Browser Response</button>
+            <button class="tab-btn" data-tab="tabVerification">Server Result</button>
+          </div>
+
+          <div class="tab-contents">
+            <!-- Options Tab -->
+            <div class="tab-pane active" id="tabOptions">
+              <div class="pane-header">
+                <span class="http-badge get">GET / POST</span>
+                <span class="pane-desc">Generated parameters sent to client</span>
+              </div>
+              <pre><code id="jsonOptions" class="language-json">// Awaiting registration or authentication...</code></pre>
+            </div>
+
+            <!-- Response Tab -->
+            <div class="tab-pane" id="tabResponse">
+              <div class="pane-header">
+                <span class="http-badge post">POST</span>
+                <span class="pane-desc">Cryptographic signature and key metadata from device</span>
+              </div>
+              <pre><code id="jsonResponse" class="language-json">// Awaiting credentials callback...</code></pre>
+            </div>
+
+            <!-- Verification Tab -->
+            <div class="tab-pane" id="tabVerification">
+              <div class="pane-header">
+                <span class="http-badge verify">VERIFY</span>
+                <span class="pane-desc">Server cryptographic validation result</span>
+              </div>
+              <pre><code id="jsonVerification" class="language-json">// Awaiting verification result...</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <div class="container footer-container">
+      <p>Passkey Usability Study Research Tool &bull; Created for UX and Human-Computer Interaction Analysis</p>
+      <p class="version">WebAuthn API Core Framework &bull; Port: 3000</p>
+    </div>
+  </footer>
+
+  <!-- SimpleWebAuthn browser library (served locally from Express app) -->
+  <script src="/js/simplewebauthn-browser.js"></script>
+  <!-- Application logic script -->
+  <script src="app.js"></script>
+</body>
+</html>
