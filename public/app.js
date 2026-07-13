@@ -296,7 +296,8 @@ const credentialsListBody = document.getElementById('credentialsListBody');
 // Check Current Session on load
 async function checkAuthSession() {
   try {
-    const res = await fetch('/api/me');
+    const dbToken = localStorage.getItem('passkey_db_token') || '';
+    const res = await fetch(`/api/me?dbToken=${encodeURIComponent(dbToken)}`);
     const data = await res.json();
 
     if (data.loggedIn) {
@@ -373,10 +374,11 @@ signupForm.addEventListener('submit', async (e) => {
     setConsoleIndicator('REQ_OPTIONS', true);
     updateFlowDiagram('options_req_register');
     
+    const dbToken = localStorage.getItem('passkey_db_token') || '';
     const optionsRes = await fetch('/api/register/options', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username })
+      body: JSON.stringify({ username, dbToken })
     });
     
     if (!optionsRes.ok) {
@@ -434,7 +436,8 @@ signupForm.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         response: attestationResponse,
-        mock: isDemoMode ? true : undefined
+        mock: isDemoMode ? true : undefined,
+        dbToken
       })
     });
 
@@ -443,6 +446,9 @@ signupForm.addEventListener('submit', async (e) => {
     document.querySelector('[data-tab="tabVerification"]').click();
 
     if (verifyResult.verified) {
+      if (verifyResult.dbToken) {
+        localStorage.setItem('passkey_db_token', verifyResult.dbToken);
+      }
       setConsoleIndicator('VERIFIED');
       updateFlowDiagram('success_register');
       
@@ -478,10 +484,11 @@ loginForm.addEventListener('submit', async (e) => {
     setConsoleIndicator('REQ_OPTIONS', true);
     updateFlowDiagram('options_req_login');
 
+    const dbToken = localStorage.getItem('passkey_db_token') || '';
     const optionsRes = await fetch('/api/login/options', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: username || undefined }) // username is optional for discoverable keys
+      body: JSON.stringify({ username: username || undefined, dbToken }) // username is optional for discoverable keys
     });
 
     if (!optionsRes.ok) {
@@ -538,7 +545,8 @@ loginForm.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ 
         response: assertionResponse,
-        mock: isDemoMode ? true : undefined
+        mock: isDemoMode ? true : undefined,
+        dbToken
       })
     });
 
@@ -547,6 +555,9 @@ loginForm.addEventListener('submit', async (e) => {
     document.querySelector('[data-tab="tabVerification"]').click();
 
     if (verifyResult.verified) {
+      if (verifyResult.dbToken) {
+        localStorage.setItem('passkey_db_token', verifyResult.dbToken);
+      }
       setConsoleIndicator('VERIFIED');
       updateFlowDiagram('success_login');
 

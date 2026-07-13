@@ -1,7 +1,7 @@
 import express from 'express';
-import session from 'express-session';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import {
   generateRegistrationOptions,
@@ -32,37 +32,69 @@ function getOrigin(req) {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configure sessions to store WebAuthn challenges
-app.use(
-  session({
-    secret: 'passkey-usability-study-secret-key-12345',
-    resave: false,
-    saveUninitialized: true,
-    cookie: {
-      secure: false, // Set to true if using HTTPS, false for localhost HTTP
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    },
-  })
-);
+// Stateless Database and Session Signing Helpers
+const SECRET = process.env.SESSION_SECRET || 'passkey-usability-study-secret-key-12345';
 
+function signData(data) {
+  const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+  const hmac = crypto.createHmac('sha256', SECRET);
+  hmac.update(payload);
+  const signature = hmac.digest('base64url');
+  return `${payload}.${signature}`;
+}
 
+function verifyData(token) {
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length !== 2) return null;
+  const [payload, signature] = parts;
+  const hmac = crypto.createHmac('sha256', SECRET);
+  hmac.update(payload);
+  const expectedSignature = hmac.digest('base64url');
+  if (signature !== expectedSignature) return null;
+  try {
+    return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+  } catch (e) {
+    return null;
+  }
+}
 
-// In-Memory Database (for testing / demo purposes)
-const users = new Map(); // username -> user object
+// Parse database from token
+function getDatabase(dbToken) {
+  const data = verifyData(dbToken);
+  return data && data.users ? data.users : [];
+}
 
+// Simple cookie getter helper
+function getCookie(req, name) {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) return null;
+  const cookies = cookieHeader.split(';');
+  for (const cookie of cookies) {
+    const [key, val] = cookie.trim().split('=');
+    if (key === name) {
+      return decodeURIComponent(val);
+    }
+  }
+  return null;
+}
 
 /**
  * Endpoint: Get current session status
  */
 app.get('/api/me', (req, res) => {
-  if (!req.session.loggedInUser) {
+  const loggedInUserVal = getCookie(req, 'loggedInUser');
+  const loggedInUserSession = verifyData(loggedInUserVal);
+  if (!loggedInUserSession) {
     return res.json({ loggedIn: false });
   }
 
-  const user = users.get(req.session.loggedInUser);
+  const username = loggedInUserSession.username;
+  const dbToken = req.query.dbToken;
+  const dbUsers = getDatabase(dbToken);
+  const user = dbUsers.find((u) => u.username === username);
   if (!user) {
-    req.session.destroy();
+    res.clearCookie('loggedInUser');
     return res.json({ loggedIn: false });
   }
 
@@ -87,14 +119,15 @@ app.get('/api/me', (req, res) => {
  * Endpoint: Register options generation
  */
 app.post('/api/register/options', async (req, res) => {
-  const { username } = req.body;
+  const { username, dbToken } = req.body;
 
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
 
-  // Check if user already exists
-  const existingUser = users.get(username);
+  const dbUsers = getDatabase(dbToken);
+  // Check if user already exists in client database
+  const existingUser = dbUsers.find((u) => u.username === username);
   const userDevices = existingUser ? existingUser.credentials : [];
 
   // Generate unique User ID if it's a new user
@@ -119,12 +152,20 @@ app.post('/api/register/options', async (req, res) => {
       },
     });
 
-    // Save challenge and username in session
-    req.session.currentChallenge = options.challenge;
-    req.session.registeringUser = {
-      id: userID,
-      username: username,
-    };
+    // Store challenge and username in signed cookie
+    const regSessionToken = signData({
+      challenge: options.challenge,
+      registeringUser: {
+        id: userID,
+        username: username,
+      }
+    });
+    res.cookie('reg_session', regSessionToken, {
+      httpOnly: true,
+      secure: getOrigin(req).startsWith('https'),
+      sameSite: 'lax',
+      maxAge: 5 * 60 * 1000 // 5 minutes
+    });
 
     res.json(options);
   } catch (error) {
@@ -137,23 +178,27 @@ app.post('/api/register/options', async (req, res) => {
  * Endpoint: Register response verification
  */
 app.post('/api/register/verify', async (req, res) => {
-  const { response, mock } = req.body;
-  const { currentChallenge, registeringUser } = req.session;
+  const { response, mock, dbToken } = req.body;
+  const regSessionVal = getCookie(req, 'reg_session');
+  const regSession = verifyData(regSessionVal);
 
-  if (!currentChallenge || !registeringUser) {
+  if (!regSession) {
     return res.status(400).json({ error: 'Registration session expired or missing' });
   }
 
+  const { challenge: currentChallenge, registeringUser } = regSession;
+  const dbUsers = getDatabase(dbToken);
+
   if (mock === true) {
     const mockCredId = 'mock-cred-' + Math.random().toString(36).substring(2, 11);
-    let user = users.get(registeringUser.username);
+    let user = dbUsers.find((u) => u.username === registeringUser.username);
     if (!user) {
       user = {
         id: registeringUser.id,
         username: registeringUser.username,
         credentials: [],
       };
-      users.set(registeringUser.username, user);
+      dbUsers.push(user);
     }
     user.credentials.push({
       credentialID: mockCredId,
@@ -163,11 +208,19 @@ app.post('/api/register/verify', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
 
-    req.session.currentChallenge = null;
-    req.session.registeringUser = null;
-    req.session.loggedInUser = user.username;
+    res.clearCookie('reg_session');
 
-    return res.json({ verified: true, mock: true });
+    // Create session cookie
+    const loggedInUserToken = signData({ username: user.username });
+    res.cookie('loggedInUser', loggedInUserToken, {
+      httpOnly: true,
+      secure: getOrigin(req).startsWith('https'),
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
+    const newDbToken = signData({ users: dbUsers });
+    return res.json({ verified: true, mock: true, dbToken: newDbToken });
   }
 
   try {
@@ -184,14 +237,14 @@ app.post('/api/register/verify', async (req, res) => {
       const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
       // Find or create user
-      let user = users.get(registeringUser.username);
+      let user = dbUsers.find((u) => u.username === registeringUser.username);
       if (!user) {
         user = {
           id: registeringUser.id,
           username: registeringUser.username,
           credentials: [],
         };
-        users.set(registeringUser.username, user);
+        dbUsers.push(user);
       }
 
       // Store device key details
@@ -203,12 +256,19 @@ app.post('/api/register/verify', async (req, res) => {
         createdAt: new Date().toISOString(),
       });
 
-      // Clear registration details, mark user as logged in
-      req.session.currentChallenge = null;
-      req.session.registeringUser = null;
-      req.session.loggedInUser = user.username;
+      res.clearCookie('reg_session');
 
-      res.json({ verified: true });
+      // Create session cookie
+      const loggedInUserToken = signData({ username: user.username });
+      res.cookie('loggedInUser', loggedInUserToken, {
+        httpOnly: true,
+        secure: getOrigin(req).startsWith('https'),
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
+      const newDbToken = signData({ users: dbUsers });
+      res.json({ verified: true, dbToken: newDbToken });
     } else {
       res.status(400).json({ error: 'Registration verification failed' });
     }
@@ -222,14 +282,15 @@ app.post('/api/register/verify', async (req, res) => {
  * Endpoint: Login options generation
  */
 app.post('/api/login/options', async (req, res) => {
-  const { username } = req.body;
+  const { username, dbToken } = req.body;
+  const dbUsers = getDatabase(dbToken);
 
   let allowCredentials = [];
 
   // If a username is provided, restrict to their registered keys.
   // Otherwise, we allow discoverable credentials (login without username upfront).
   if (username) {
-    const user = users.get(username);
+    const user = dbUsers.find((u) => u.username === username);
     if (!user) {
       return res.status(400).json({ error: `User "${username}" does not exist.` });
     }
@@ -247,8 +308,16 @@ app.post('/api/login/options', async (req, res) => {
       userVerification: 'preferred',
     });
 
-    // Save authentication challenge in session
-    req.session.currentChallenge = options.challenge;
+    // Save authentication challenge in signed cookie
+    const loginSessionToken = signData({
+      challenge: options.challenge
+    });
+    res.cookie('login_session', loginSessionToken, {
+      httpOnly: true,
+      secure: getOrigin(req).startsWith('https'),
+      sameSite: 'lax',
+      maxAge: 5 * 60 * 1000 // 5 minutes
+    });
 
     res.json(options);
   } catch (error) {
@@ -261,18 +330,22 @@ app.post('/api/login/options', async (req, res) => {
  * Endpoint: Login response verification
  */
 app.post('/api/login/verify', async (req, res) => {
-  const { response, mock } = req.body;
-  const { currentChallenge } = req.session;
+  const { response, mock, dbToken } = req.body;
+  const loginSessionVal = getCookie(req, 'login_session');
+  const loginSession = verifyData(loginSessionVal);
 
-  if (!currentChallenge) {
+  if (!loginSession) {
     return res.status(400).json({ error: 'Authentication session expired or missing' });
   }
+
+  const currentChallenge = loginSession.challenge;
+  const dbUsers = getDatabase(dbToken);
 
   if (mock === true) {
     let foundUser = null;
     let foundCred = null;
 
-    for (const [username, user] of users.entries()) {
+    for (const user of dbUsers) {
       const cred = user.credentials.find((c) => c.credentialID === response.id);
       if (cred) {
         foundUser = user;
@@ -281,14 +354,22 @@ app.post('/api/login/verify', async (req, res) => {
       }
     }
 
-    if (!foundUser && users.size > 0) {
-      foundUser = users.values().next().value;
+    if (!foundUser && dbUsers.length > 0) {
+      foundUser = dbUsers[0];
       foundCred = foundUser.credentials[0];
     }
 
     if (foundUser) {
-      req.session.currentChallenge = null;
-      req.session.loggedInUser = foundUser.username;
+      res.clearCookie('login_session');
+
+      const loggedInUserToken = signData({ username: foundUser.username });
+      res.cookie('loggedInUser', loggedInUserToken, {
+        httpOnly: true,
+        secure: getOrigin(req).startsWith('https'),
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
       return res.json({ verified: true, mock: true });
     } else {
       return res.status(400).json({ error: 'No registered mock users found in database. Please sign up first!' });
@@ -300,7 +381,7 @@ app.post('/api/login/verify', async (req, res) => {
     let foundUser = null;
     let foundCred = null;
 
-    for (const [username, user] of users.entries()) {
+    for (const user of dbUsers) {
       const cred = user.credentials.find((c) => c.credentialID === response.id);
       if (cred) {
         foundUser = user;
@@ -332,11 +413,18 @@ app.post('/api/login/verify', async (req, res) => {
       // Update signature counter
       foundCred.counter = authenticationInfo.newCounter;
 
-      // Mark user as logged in
-      req.session.currentChallenge = null;
-      req.session.loggedInUser = foundUser.username;
+      res.clearCookie('login_session');
 
-      res.json({ verified: true });
+      const loggedInUserToken = signData({ username: foundUser.username });
+      res.cookie('loggedInUser', loggedInUserToken, {
+        httpOnly: true,
+        secure: getOrigin(req).startsWith('https'),
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
+      const newDbToken = signData({ users: dbUsers });
+      res.json({ verified: true, dbToken: newDbToken });
     } else {
       res.status(400).json({ error: 'Authentication verification failed' });
     }
@@ -347,21 +435,11 @@ app.post('/api/login/verify', async (req, res) => {
 });
 
 /**
- * Endpoint: Usability Feedback survey submission
- */
-
-
-/**
  * Endpoint: Logout
  */
 app.post('/api/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Logout error:', err);
-      return res.status(500).json({ error: 'Logout failed' });
-    }
-    res.json({ success: true });
-  });
+  res.clearCookie('loggedInUser');
+  res.json({ success: true });
 });
 
 // Start server if not running in a Serverless environment (like Vercel)
