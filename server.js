@@ -379,7 +379,9 @@ app.post('/api/login/verify', async (req, res) => {
     let foundUser = null;
     let foundCred = null;
 
+    console.log('[DEBUG] Login verify response.id:', response.id);
     for (const user of dbUsers) {
+      console.log('[DEBUG] User:', user.username, 'credentials:', user.credentials.map(c => c.credentialID));
       const cred = user.credentials.find((c) => c.credentialID === response.id);
       if (cred) {
         foundUser = user;
