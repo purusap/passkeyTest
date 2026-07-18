@@ -36,6 +36,20 @@ function getCookieOptions(req) {
   };
 }
 
+function normalizeCredentialID(id) {
+  if (!id) return '';
+  try {
+    const buf = Buffer.from(id, 'base64url');
+    const str = buf.toString('utf8');
+    if (/^[a-zA-Z0-9\-_]+$/.test(str)) {
+      return str;
+    }
+    return id;
+  } catch (e) {
+    return id;
+  }
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -150,7 +164,7 @@ app.post('/api/register/options', async (req, res) => {
       userDisplayName: username,
       attestationType: 'none',
       excludeCredentials: userDevices.map((dev) => ({
-        id: dev.credentialID,
+        id: normalizeCredentialID(dev.credentialID),
         type: 'public-key',
         transports: dev.transports,
       })),
@@ -253,7 +267,7 @@ app.post('/api/register/verify', async (req, res) => {
 
       // Store device key details
       user.credentials.push({
-        credentialID: Buffer.from(credentialID).toString('base64url'),
+        credentialID,
         credentialPublicKey: Buffer.from(credentialPublicKey).toString('base64url'),
         counter,
         transports: response.transports || [],
@@ -297,7 +311,7 @@ app.post('/api/login/options', async (req, res) => {
       return res.status(400).json({ error: `User "${username}" does not exist.` });
     }
     allowCredentials = user.credentials.map((dev) => ({
-      id: dev.credentialID,
+      id: normalizeCredentialID(dev.credentialID),
       type: 'public-key',
       transports: dev.transports,
     }));
@@ -348,7 +362,9 @@ app.post('/api/login/verify', async (req, res) => {
     for (const user of dbUsers) {
       const cred = user.credentials.find((c) => {
         try {
-          return Buffer.from(c.credentialID, 'base64url').equals(Buffer.from(response.id, 'base64url'));
+          const normStored = normalizeCredentialID(c.credentialID);
+          const normResponse = normalizeCredentialID(response.id);
+          return Buffer.from(normStored, 'base64url').equals(Buffer.from(normResponse, 'base64url'));
         } catch (e) {
           return false;
         }
@@ -390,7 +406,9 @@ app.post('/api/login/verify', async (req, res) => {
       console.log('[DEBUG] User:', user.username, 'credentials:', user.credentials.map(c => c.credentialID));
       const cred = user.credentials.find((c) => {
         try {
-          return Buffer.from(c.credentialID, 'base64url').equals(Buffer.from(response.id, 'base64url'));
+          const normStored = normalizeCredentialID(c.credentialID);
+          const normResponse = normalizeCredentialID(response.id);
+          return Buffer.from(normStored, 'base64url').equals(Buffer.from(normResponse, 'base64url'));
         } catch (e) {
           return false;
         }
