@@ -39,6 +39,12 @@
   --btn-primary-bg: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
   --btn-primary-hover-bg: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   --btn-primary-text: #0a0d14;
+
+  --bg-hero-card: linear-gradient(135deg, rgba(22, 28, 45, 0.8) 0%, rgba(10, 13, 20, 0.9) 100%);
+  --bg-auth-card: rgba(18, 22, 35, 0.4);
+  --border-auth-card: rgba(255, 255, 255, 0.08);
+  --bg-desc: rgba(0, 0, 0, 0.3);
+  --bg-flow-diag: rgba(0, 0, 0, 0.2);
 }
 
 @media (prefers-color-scheme: light) {
@@ -77,6 +83,12 @@
     --btn-primary-bg: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     --btn-primary-hover-bg: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
     --btn-primary-text: #ffffff;
+
+    --bg-hero-card: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(241, 245, 249, 0.95) 100%);
+    --bg-auth-card: rgba(255, 255, 255, 0.65);
+    --border-auth-card: rgba(15, 23, 42, 0.08);
+    --bg-desc: rgba(15, 23, 42, 0.04);
+    --bg-flow-diag: rgba(15, 23, 42, 0.03);
   }
 }
 
@@ -244,7 +256,7 @@ body {
 }
 
 .card-hero {
-  background: linear-gradient(135deg, rgba(22, 28, 45, 0.8) 0%, rgba(10, 13, 20, 0.9) 100%);
+  background: var(--bg-hero-card);
   border: 1px solid rgba(56, 189, 248, 0.15);
 }
 
@@ -573,7 +585,7 @@ body {
 
 .flow-diagram {
   margin-top: 24px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-flow-diag);
   border-radius: 12px;
   padding: 24px;
   border: 1px solid var(--border-color);
@@ -689,7 +701,7 @@ body {
 
 .flow-state-desc {
   font-size: 0.875rem;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-desc);
   padding: 12px 16px;
   border-radius: 8px;
   border-left: 3px solid var(--color-primary);
@@ -1243,23 +1255,23 @@ details.credentials-disclosure[open] summary {
 
 /* Premium Mockup Styles */
 .card.auth-card {
-  background: rgba(18, 22, 35, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--bg-auth-card);
+  border: 1px solid var(--border-auth-card);
   border-radius: 20px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 40px rgba(56, 189, 248, 0.03);
+  box-shadow: var(--shadow-auth-card);
   backdrop-filter: blur(20px);
   padding: 40px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card.auth-card:hover {
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 24px 55px rgba(0, 0, 0, 0.5), 0 0 50px rgba(56, 189, 248, 0.05);
+  border-color: var(--border-active);
+  box-shadow: var(--shadow-auth-card-hover);
 }
 
 .auth-card .input-group input[type="text"] {
-  background: rgba(10, 13, 20, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-input) !important;
   border-radius: 10px !important;
   padding: 14px 18px !important;
   font-size: 1rem !important;
@@ -1269,8 +1281,8 @@ details.credentials-disclosure[open] summary {
 
 .auth-card .input-group input[type="text"]:focus {
   border-color: var(--color-primary) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2) !important;
-  background: rgba(10, 13, 20, 0.95) !important;
+  box-shadow: 0 0 14px var(--glow-blue) !important;
+  background: var(--bg-card-hover) !important;
 }
 
 .auth-card .btn-primary.btn-block {
