@@ -23,22 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Reset Lab Database (clears local browser storage database)
-const btnResetDb = document.getElementById('btnResetDb');
-if (btnResetDb) {
-  btnResetDb.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to delete all registered users and reset the database? This cannot be undone.')) {
-      localStorage.removeItem('passkey_db_token');
-      try {
-        await fetch('/api/logout', { method: 'POST' });
-      } catch (e) {
-        console.error(e);
-      }
-      window.location.reload();
-    }
-  });
-}
-
 // Toggle Technical Details (Visualizer & Console)
 const btnToggleTech = document.getElementById('btnToggleTech');
 const mainLayout = document.getElementById('mainLayout');
