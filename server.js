@@ -429,9 +429,9 @@ app.post('/api/login/verify', async (req, res) => {
       expectedChallenge: currentChallenge,
       expectedOrigin: getOrigin(req),
       expectedRPID: getRPID(req),
-      credential: {
-        id: foundCred.credentialID,
-        publicKey: Buffer.from(foundCred.credentialPublicKey, 'base64url'),
+      authenticator: {
+        credentialID: normalizeCredentialID(foundCred.credentialID),
+        credentialPublicKey: Buffer.from(foundCred.credentialPublicKey, 'base64url'),
         counter: foundCred.counter,
         transports: foundCred.transports,
       },
