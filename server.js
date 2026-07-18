@@ -28,6 +28,14 @@ function getOrigin(req) {
   return `${protocol}://${req.get('host')}`;
 }
 
+function getCookieOptions(req) {
+  return {
+    httpOnly: true,
+    secure: getOrigin(req).startsWith('https'),
+    sameSite: 'lax',
+  };
+}
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -94,7 +102,7 @@ app.get('/api/me', (req, res) => {
   const dbUsers = getDatabase(dbToken);
   const user = dbUsers.find((u) => u.username === username);
   if (!user) {
-    res.clearCookie('loggedInUser');
+    res.clearCookie('loggedInUser', getCookieOptions(req));
     return res.json({ loggedIn: false });
   }
 
@@ -161,9 +169,7 @@ app.post('/api/register/options', async (req, res) => {
       }
     });
     res.cookie('reg_session', regSessionToken, {
-      httpOnly: true,
-      secure: getOrigin(req).startsWith('https'),
-      sameSite: 'lax',
+      ...getCookieOptions(req),
       maxAge: 5 * 60 * 1000 // 5 minutes
     });
 
@@ -208,14 +214,12 @@ app.post('/api/register/verify', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
 
-    res.clearCookie('reg_session');
+    res.clearCookie('reg_session', getCookieOptions(req));
 
     // Create session cookie
     const loggedInUserToken = signData({ username: user.username });
     res.cookie('loggedInUser', loggedInUserToken, {
-      httpOnly: true,
-      secure: getOrigin(req).startsWith('https'),
-      sameSite: 'lax',
+      ...getCookieOptions(req),
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
@@ -256,14 +260,12 @@ app.post('/api/register/verify', async (req, res) => {
         createdAt: new Date().toISOString(),
       });
 
-      res.clearCookie('reg_session');
+      res.clearCookie('reg_session', getCookieOptions(req));
 
       // Create session cookie
       const loggedInUserToken = signData({ username: user.username });
       res.cookie('loggedInUser', loggedInUserToken, {
-        httpOnly: true,
-        secure: getOrigin(req).startsWith('https'),
-        sameSite: 'lax',
+        ...getCookieOptions(req),
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
 
@@ -313,9 +315,7 @@ app.post('/api/login/options', async (req, res) => {
       challenge: options.challenge
     });
     res.cookie('login_session', loginSessionToken, {
-      httpOnly: true,
-      secure: getOrigin(req).startsWith('https'),
-      sameSite: 'lax',
+      ...getCookieOptions(req),
       maxAge: 5 * 60 * 1000 // 5 minutes
     });
 
@@ -360,13 +360,11 @@ app.post('/api/login/verify', async (req, res) => {
     }
 
     if (foundUser) {
-      res.clearCookie('login_session');
+      res.clearCookie('login_session', getCookieOptions(req));
 
       const loggedInUserToken = signData({ username: foundUser.username });
       res.cookie('loggedInUser', loggedInUserToken, {
-        httpOnly: true,
-        secure: getOrigin(req).startsWith('https'),
-        sameSite: 'lax',
+        ...getCookieOptions(req),
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
 
@@ -413,13 +411,11 @@ app.post('/api/login/verify', async (req, res) => {
       // Update signature counter
       foundCred.counter = authenticationInfo.newCounter;
 
-      res.clearCookie('login_session');
+      res.clearCookie('login_session', getCookieOptions(req));
 
       const loggedInUserToken = signData({ username: foundUser.username });
       res.cookie('loggedInUser', loggedInUserToken, {
-        httpOnly: true,
-        secure: getOrigin(req).startsWith('https'),
-        sameSite: 'lax',
+        ...getCookieOptions(req),
         maxAge: 24 * 60 * 60 * 1000 // 24 hours
       });
 
@@ -438,7 +434,7 @@ app.post('/api/login/verify', async (req, res) => {
  * Endpoint: Logout
  */
 app.post('/api/logout', (req, res) => {
-  res.clearCookie('loggedInUser');
+  res.clearCookie('loggedInUser', getCookieOptions(req));
   res.json({ success: true });
 });
 
