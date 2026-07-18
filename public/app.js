@@ -35,6 +35,10 @@ if (btnToggleTech && mainLayout && infoPanel) {
     mainLayout.classList.toggle('expanded', !isHidden);
     btnToggleTech.classList.toggle('active', !isHidden);
     
+    if (introCard) {
+      introCard.classList.toggle('hidden', isHidden);
+    }
+    
     if (isHidden) {
       btnToggleTech.innerHTML = '<span>🧑‍💻 Show Technical Details</span>';
     } else {
@@ -389,8 +393,12 @@ function renderDashboard() {
 
 function renderSignedOut() {
   authControls.classList.remove('hidden');
-  introCard.classList.remove('hidden');
   dashboardArea.classList.add('hidden');
+  
+  if (introCard && infoPanel) {
+    const isTechVisible = !infoPanel.classList.contains('hidden');
+    introCard.classList.toggle('hidden', !isTechVisible);
+  }
   
   // Auto-switch to Log In tab after logging out
   if (tabBtnLogin) {

@@ -22,23 +22,13 @@
       <div class="logo-area">
         <span class="logo-icon">🔑</span>
         <div>
-          <h1>Passkey Usability Lab</h1>
-          <p class="subtitle">A Usability Study of Passkeys for Authentication: A Comprehensive Look at the User Experience</p>
+          <h1>Passkey Lab</h1>
         </div>
       </div>
       <div class="header-actions">
         <button id="btnToggleTech" class="btn-toggle-tech">
           <span>🧑‍💻 Show Technical Details</span>
         </button>
-        <label class="demo-toggle" id="demoModeContainer">
-          <input type="checkbox" id="demoModeToggle">
-          <span class="slider"></span>
-          <span class="toggle-label">Demo Mode (Simulate Biometrics)</span>
-        </label>
-        <div class="connection-status" id="connectionStatus">
-          <span class="status-dot green"></span>
-          <span>Secure Local Node</span>
-        </div>
       </div>
     </div>
   </header>
@@ -46,8 +36,8 @@
   <main class="container main-layout" id="mainLayout">
     <!-- Left Column: User Interactive Sandbox -->
     <section class="panel sandbox-panel">
-      <!-- Welcome Intro Section -->
-      <div id="introCard" class="card card-hero">
+      <!-- Welcome Intro Section (hidden by default) -->
+      <div id="introCard" class="card card-hero hidden">
         <h2>Interactive Passkey Sandbox</h2>
         <p>Welcome to the passkey testing environment. Here, you can test how registration (signup) and assertion (login) feel in practice. Unlike passwords, passkeys use cryptography to sign a challenge from the server, eliminating phishing risks.</p>
         <p class="study-note"><strong>Study Instructions:</strong> Try creating a new account first, then log out and log back in using your device's passkey authenticator (e.g. Windows Hello, TouchID, FaceID, or a USB security key).</p>
@@ -55,7 +45,7 @@
 
       <!-- Auth Controls (Signed Out state) -->
       <div id="authControls" class="auth-sections">
-        <div class="card">
+        <div class="card auth-card">
           <div class="auth-tabs">
             <button class="auth-tab-btn active" id="tabBtnSignup">Create Account</button>
             <button class="auth-tab-btn" id="tabBtnLogin">Log In</button>
@@ -89,6 +79,15 @@
                 <span class="btn-icon">🔓</span>
               </button>
             </form>
+          </div>
+
+          <!-- Demo Mode Switcher (Moved inside the Card for clean UI) -->
+          <div class="demo-mode-card-toggle" id="demoModeContainer">
+            <label class="demo-toggle">
+              <input type="checkbox" id="demoModeToggle">
+              <span class="slider"></span>
+              <span class="toggle-label">Demo Mode (Simulate Biometrics)</span>
+            </label>
           </div>
         </div>
       </div>
@@ -263,9 +262,15 @@
   </main>
 
   <footer class="app-footer">
-    <div class="container footer-container">
-      <p>Passkey Usability Study Research Tool &bull; Created for UX and Human-Computer Interaction Analysis</p>
-      <p class="version" id="footerVersion">WebAuthn API Core Framework &bull; Port: 3000</p>
+    <div class="container footer-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <p>Passkey Usability Study Research Tool &bull; Created for UX and Human-Computer Interaction Analysis</p>
+        <p class="version" id="footerVersion">WebAuthn API Core Framework &bull; Port: 3000</p>
+      </div>
+      <div class="connection-status" id="connectionStatus" style="margin: 0;">
+        <span class="status-dot green"></span>
+        <span>Secure Local Node</span>
+      </div>
     </div>
   </footer>
 
