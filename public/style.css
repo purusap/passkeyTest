@@ -68,9 +68,14 @@ body {
 }
 
 .container {
-  max-width: 1300px;
+  max-width: 650px; /* Default centered simplified layout */
   margin: 0 auto;
   padding: 0 24px;
+  transition: max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container.expanded {
+  max-width: 1300px;
 }
 
 /* Header */
@@ -142,12 +147,15 @@ body {
   box-shadow: 0 0 8px var(--color-success);
 }
 
-/* Layout Grid */
 .main-layout {
+  display: block; /* Centered block by default */
+  margin-top: 36px;
+}
+
+.main-layout.split-layout {
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: 28px;
-  margin-top: 36px;
   align-items: start;
 }
 
@@ -1066,6 +1074,116 @@ code {
     flex-grow: 1;
     justify-content: center;
   }
+}
+
+/* Redesigned Tab and Collapsible styles for study */
+.auth-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 24px;
+  padding-bottom: 1px;
+}
+
+.auth-tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 14px 20px;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.auth-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.auth-tab-btn.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.auth-tab-content {
+  display: block;
+}
+
+.auth-tab-content.hidden {
+  display: none !important;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-toggle-tech {
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--color-primary);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-family: var(--font-sans);
+  font-size: 0.825rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-toggle-tech:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.btn-toggle-tech.active {
+  background: var(--color-primary);
+  color: var(--text-dark);
+  border-color: var(--color-primary);
+}
+
+details.credentials-disclosure {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+details.credentials-disclosure:hover {
+  background: rgba(0, 0, 0, 0.25);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+details.credentials-disclosure summary {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  outline: none;
+  user-select: none;
+}
+
+details.credentials-disclosure summary:hover {
+  color: var(--text-main);
+}
+
+details.credentials-disclosure[open] {
+  padding-bottom: 16px;
+}
+
+details.credentials-disclosure[open] summary {
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
 }
 
 

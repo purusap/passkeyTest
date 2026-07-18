@@ -27,6 +27,9 @@
         </div>
       </div>
       <div class="header-actions">
+        <button id="btnToggleTech" class="btn-toggle-tech">
+          <span>🧑‍💻 Show Technical Details</span>
+        </button>
         <label class="demo-toggle" id="demoModeContainer">
           <input type="checkbox" id="demoModeToggle">
           <span class="slider"></span>
@@ -40,7 +43,7 @@
     </div>
   </header>
 
-  <main class="container main-layout">
+  <main class="container main-layout" id="mainLayout">
     <!-- Left Column: User Interactive Sandbox -->
     <section class="panel sandbox-panel">
       <!-- Welcome Intro Section -->
@@ -52,46 +55,41 @@
 
       <!-- Auth Controls (Signed Out state) -->
       <div id="authControls" class="auth-sections">
-        <!-- Signup Section -->
-        <div class="card" id="signupCard">
-          <div class="card-header">
-            <span class="step-badge">1</span>
-            <h2>Sign Up (Create Account)</h2>
+        <div class="card">
+          <div class="auth-tabs">
+            <button class="auth-tab-btn active" id="tabBtnSignup">Create Account</button>
+            <button class="auth-tab-btn" id="tabBtnLogin">Log In</button>
           </div>
-          <p class="card-desc">Create a username and bind it to a credential generated securely by your device's hardware.</p>
-          
-          <form id="signupForm" class="auth-form" onsubmit="event.preventDefault();">
-            <div class="input-group">
-              <label for="signupUsername">Username</label>
-              <input type="text" id="signupUsername" placeholder="e.g. alice, research_user" autocomplete="username" required>
-            </div>
-            <button type="submit" id="btnSignup" class="btn btn-primary">
-              <span class="btn-text">Register Passkey</span>
-              <span class="btn-icon">⚡</span>
-            </button>
-          </form>
-        </div>
 
-        <!-- Login Section -->
-        <div class="card" id="loginCard">
-          <div class="card-header">
-            <span class="step-badge">2</span>
-            <h2>Log In</h2>
+          <!-- Signup Tab Content -->
+          <div id="signupTabContent" class="auth-tab-content">
+            <p class="card-desc">Create a username and bind it to a credential generated securely by your device's hardware.</p>
+            <form id="signupForm" class="auth-form" onsubmit="event.preventDefault();">
+              <div class="input-group">
+                <label for="signupUsername">Username</label>
+                <input type="text" id="signupUsername" placeholder="e.g. alice, research_user" autocomplete="username" required>
+              </div>
+              <button type="submit" id="btnSignup" class="btn btn-primary btn-block">
+                <span class="btn-text">Register Passkey</span>
+                <span class="btn-icon">⚡</span>
+              </button>
+            </form>
           </div>
-          <p class="card-desc">Authenticate instantly using your saved passkey. You can type your username to use specific keys, or perform a <strong>username-less login</strong> to let your device locate the correct key.</p>
-          
-          <form id="loginForm" class="auth-form" onsubmit="event.preventDefault();">
-            <div class="input-group">
-              <label for="loginUsername">Username (Optional)</label>
-              <input type="text" id="loginUsername" placeholder="Leave empty for username-less search" autocomplete="username">
-            </div>
-            <div class="btn-row">
-              <button type="submit" id="btnLogin" class="btn btn-secondary">
+
+          <!-- Login Tab Content -->
+          <div id="loginTabContent" class="auth-tab-content hidden">
+            <p class="card-desc">Authenticate instantly using your saved passkey. You can trigger a <strong>username-less login</strong> to let your device locate the correct key, or search for a specific username.</p>
+            <form id="loginForm" class="auth-form" onsubmit="event.preventDefault();">
+              <div class="input-group">
+                <label for="loginUsername">Username (Optional)</label>
+                <input type="text" id="loginUsername" placeholder="Leave empty for username-less search" autocomplete="username">
+              </div>
+              <button type="submit" id="btnLogin" class="btn btn-secondary btn-block">
                 <span class="btn-text">Log In with Passkey</span>
                 <span class="btn-icon">🔓</span>
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -111,28 +109,31 @@
           </div>
         </div>
 
-        <!-- Credentials List Card -->
-        <div class="card">
-          <h3>Your Registered Credentials</h3>
-          <p class="card-desc">This device has registered the following passkey credentials for this sandbox instance.</p>
-          <div class="table-container">
-            <table class="credentials-table">
-              <thead>
-                <tr>
-                  <th>Credential ID (Truncated)</th>
-                  <th>Counter</th>
-                  <th>Created</th>
-                </tr>
-              </thead>
-              <tbody id="credentialsListBody">
-                <!-- Dynamic insertion -->
-              </tbody>
-            </table>
+        <!-- Credentials List (collapsible under details disclosure) -->
+        <details class="credentials-disclosure">
+          <summary>Show Technical Credential Details</summary>
+          <div style="margin-top: 14px;">
+            <h3>Your Registered Credentials</h3>
+            <p class="card-desc">This device has registered the following passkey credentials for this sandbox instance.</p>
+            <div class="table-container">
+              <table class="credentials-table">
+                <thead>
+                  <tr>
+                    <th>Credential ID (Truncated)</th>
+                    <th>Counter</th>
+                    <th>Created</th>
+                  </tr>
+                </thead>
+                <tbody id="credentialsListBody">
+                  <!-- Dynamic insertion -->
+                </tbody>
+              </table>
+            </div>
+            <div class="dashboard-actions">
+              <button id="btnRegisterAnother" class="btn btn-secondary btn-sm">Add Another Passkey Device</button>
+            </div>
           </div>
-          <div class="dashboard-actions">
-            <button id="btnRegisterAnother" class="btn btn-secondary btn-sm">Add Another Passkey Device</button>
-          </div>
-        </div>
+        </details>
 
         <!-- Google Form Survey Link -->
         <div class="card survey-card" id="surveyCard">
@@ -151,8 +152,8 @@
       </div>
     </section>
 
-    <!-- Right Column: Educational Flow Visualizer -->
-    <section class="panel info-panel">
+    <!-- Right Column: Educational Flow Visualizer (hidden by default for participant view) -->
+    <section class="panel info-panel hidden" id="infoPanel">
       <!-- Flow Steps -->
       <div class="card visualizer-card">
         <h3>Live Authentication Flow</h3>

@@ -23,6 +23,48 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// Toggle Technical Details (Visualizer & Console)
+const btnToggleTech = document.getElementById('btnToggleTech');
+const mainLayout = document.getElementById('mainLayout');
+const infoPanel = document.getElementById('infoPanel');
+
+if (btnToggleTech && mainLayout && infoPanel) {
+  btnToggleTech.addEventListener('click', () => {
+    const isHidden = infoPanel.classList.toggle('hidden');
+    mainLayout.classList.toggle('split-layout', !isHidden);
+    mainLayout.classList.toggle('expanded', !isHidden);
+    btnToggleTech.classList.toggle('active', !isHidden);
+    
+    if (isHidden) {
+      btnToggleTech.innerHTML = '<span>🧑‍💻 Show Technical Details</span>';
+    } else {
+      btnToggleTech.innerHTML = '<span>🧑‍💻 Hide Technical Details</span>';
+    }
+  });
+}
+
+// Auth Tab Switching
+const tabBtnSignup = document.getElementById('tabBtnSignup');
+const tabBtnLogin = document.getElementById('tabBtnLogin');
+const signupTabContent = document.getElementById('signupTabContent');
+const loginTabContent = document.getElementById('loginTabContent');
+
+if (tabBtnSignup && tabBtnLogin && signupTabContent && loginTabContent) {
+  tabBtnSignup.addEventListener('click', () => {
+    tabBtnSignup.classList.add('active');
+    tabBtnLogin.classList.remove('active');
+    signupTabContent.classList.remove('hidden');
+    loginTabContent.classList.add('hidden');
+  });
+
+  tabBtnLogin.addEventListener('click', () => {
+    tabBtnLogin.classList.add('active');
+    tabBtnSignup.classList.remove('active');
+    loginTabContent.classList.remove('hidden');
+    signupTabContent.classList.add('hidden');
+  });
+}
+
 // Panel Modes: Guide vs. Developer
 const btnUserMode = document.getElementById('btnUserMode');
 const btnDevMode = document.getElementById('btnDevMode');
@@ -349,6 +391,11 @@ function renderSignedOut() {
   authControls.classList.remove('hidden');
   introCard.classList.remove('hidden');
   dashboardArea.classList.add('hidden');
+  
+  // Auto-switch to Log In tab after logging out
+  if (tabBtnLogin) {
+    tabBtnLogin.click();
+  }
 }
 
 // ----------------------------------------------------
