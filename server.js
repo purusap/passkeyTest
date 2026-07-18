@@ -346,7 +346,13 @@ app.post('/api/login/verify', async (req, res) => {
     let foundCred = null;
 
     for (const user of dbUsers) {
-      const cred = user.credentials.find((c) => c.credentialID === response.id);
+      const cred = user.credentials.find((c) => {
+        try {
+          return Buffer.from(c.credentialID, 'base64url').equals(Buffer.from(response.id, 'base64url'));
+        } catch (e) {
+          return false;
+        }
+      });
       if (cred) {
         foundUser = user;
         foundCred = cred;
@@ -382,7 +388,13 @@ app.post('/api/login/verify', async (req, res) => {
     console.log('[DEBUG] Login verify response.id:', response.id);
     for (const user of dbUsers) {
       console.log('[DEBUG] User:', user.username, 'credentials:', user.credentials.map(c => c.credentialID));
-      const cred = user.credentials.find((c) => c.credentialID === response.id);
+      const cred = user.credentials.find((c) => {
+        try {
+          return Buffer.from(c.credentialID, 'base64url').equals(Buffer.from(response.id, 'base64url'));
+        } catch (e) {
+          return false;
+        }
+      });
       if (cred) {
         foundUser = user;
         foundCred = cred;
