@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,10 +8,13 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
   <!-- Background decorative glows -->
@@ -22,7 +26,7 @@
       <div class="logo-area">
         <span class="logo-icon">🔑</span>
         <div>
-          <h1>Passkey Lab</h1>
+          <h1>Passkey Testing</h1>
         </div>
       </div>
       <div class="header-actions">
@@ -39,8 +43,12 @@
       <!-- Welcome Intro Section (hidden by default) -->
       <div id="introCard" class="card card-hero hidden">
         <h2>Interactive Passkey Sandbox</h2>
-        <p>Welcome to the passkey testing environment. Here, you can test how registration (signup) and assertion (login) feel in practice. Unlike passwords, passkeys use cryptography to sign a challenge from the server, eliminating phishing risks.</p>
-        <p class="study-note"><strong>Study Instructions:</strong> Try creating a new account first, then log out and log back in using your device's passkey authenticator (e.g. Windows Hello, TouchID, FaceID, or a USB security key).</p>
+        <p>Welcome to the passkey testing environment. Here, you can test how registration (signup) and assertion
+          (login) feel in practice. Unlike passwords, passkeys use cryptography to sign a challenge from the server,
+          eliminating phishing risks.</p>
+        <p class="study-note"><strong>Study Instructions:</strong> Try creating a new account first, then log out and
+          log back in using your device's passkey authenticator (e.g. Windows Hello, TouchID, FaceID, or a USB security
+          key).</p>
       </div>
 
       <!-- Auth Controls (Signed Out state) -->
@@ -53,11 +61,13 @@
 
           <!-- Signup Tab Content -->
           <div id="signupTabContent" class="auth-tab-content">
-            <p class="card-desc">Create a username and bind it to a credential generated securely by your device's hardware.</p>
+            <p class="card-desc">Create a username and bind it to a credential generated securely by your device's
+              hardware.</p>
             <form id="signupForm" class="auth-form" onsubmit="event.preventDefault();">
               <div class="input-group">
                 <label for="signupUsername">Username</label>
-                <input type="text" id="signupUsername" placeholder="e.g. alice, research_user" autocomplete="username" required>
+                <input type="text" id="signupUsername" placeholder="e.g. alice, research_user" autocomplete="username"
+                  required>
               </div>
               <button type="submit" id="btnSignup" class="btn btn-primary btn-block">
                 <span class="btn-text">Register Passkey</span>
@@ -68,11 +78,14 @@
 
           <!-- Login Tab Content -->
           <div id="loginTabContent" class="auth-tab-content hidden">
-            <p class="card-desc">Authenticate instantly using your saved passkey. You can trigger a <strong>username-less login</strong> to let your device locate the correct key, or search for a specific username.</p>
+            <p class="card-desc">Authenticate instantly using your saved passkey. You can trigger a
+              <strong>username-less login</strong> to let your device locate the correct key, or search for a specific
+              username.</p>
             <form id="loginForm" class="auth-form" onsubmit="event.preventDefault();">
               <div class="input-group">
                 <label for="loginUsername">Username (Optional)</label>
-                <input type="text" id="loginUsername" placeholder="Leave empty for username-less search" autocomplete="username">
+                <input type="text" id="loginUsername" placeholder="Leave empty for username-less search"
+                  autocomplete="username">
               </div>
               <button type="submit" id="btnLogin" class="btn btn-secondary btn-block">
                 <span class="btn-text">Log In with Passkey</span>
@@ -104,7 +117,8 @@
           </div>
           <div class="user-details">
             <p><strong>User ID:</strong> <code id="userIdVal">uuid-string</code></p>
-            <p>You are successfully logged in using your Passkey! Your private key remains locked on your physical device, and only the corresponding public key was used for verification.</p>
+            <p>You are successfully logged in using your Passkey! Your private key remains locked on your physical
+              device, and only the corresponding public key was used for verification.</p>
           </div>
         </div>
 
@@ -113,7 +127,8 @@
           <summary>Show Technical Credential Details</summary>
           <div style="margin-top: 14px;">
             <h3>Your Registered Credentials</h3>
-            <p class="card-desc">This device has registered the following passkey credentials for this sandbox instance.</p>
+            <p class="card-desc">This device has registered the following passkey credentials for this sandbox instance.
+            </p>
             <div class="table-container">
               <table class="credentials-table">
                 <thead>
@@ -140,9 +155,11 @@
             <span class="step-badge">📝</span>
             <h2>Usability Questionnaire</h2>
           </div>
-          <p class="card-desc">Thank you for testing the passkey signup/login flow! To help with our research study, please click the link below to share your experience on our Google Form.</p>
+          <p class="card-desc">Thank you for testing the passkey signup/login flow! To help with our research study,
+            please click the link below to share your experience on our Google Form.</p>
           <div style="margin-top: 16px;">
-            <a href="https://forms.google.com" target="_blank" class="btn btn-primary" style="text-decoration: none; display: inline-flex; width: 100%;">
+            <a href="https://forms.google.com" target="_blank" class="btn btn-primary"
+              style="text-decoration: none; display: inline-flex; width: 100%;">
               <span class="btn-text">Open Google Form Survey</span>
               <span class="btn-icon">🔗</span>
             </a>
@@ -156,8 +173,9 @@
       <!-- Flow Steps -->
       <div class="card visualizer-card">
         <h3>Live Authentication Flow</h3>
-        <p class="card-desc text-muted">Watch the network sequence and cryptographic checkpoints update in real-time as you authenticate.</p>
-        
+        <p class="card-desc text-muted">Watch the network sequence and cryptographic checkpoints update in real-time as
+          you authenticate.</p>
+
         <div class="flow-diagram">
           <!-- Flow Nodes -->
           <div class="nodes-container">
@@ -200,19 +218,24 @@
             <button class="btn-clear" id="btnClearConsole">Clear</button>
           </div>
         </div>
-        
+
         <!-- Tab 1: Participant User Guide (Visible by default) -->
         <div class="mode-content active" id="userGuideArea">
           <div class="guide-step-card">
             <h4 id="guideStepTitle">Ready to Test</h4>
-            <p class="guide-step-desc" id="guideStepText">Enter a username on the left and click <strong>Register Passkey</strong> (or toggle <strong>Demo Mode</strong> to simulate it) to see a step-by-step explanation of how authentication occurs!</p>
-            
+            <p class="guide-step-desc" id="guideStepText">Enter a username on the left and click <strong>Register
+                Passkey</strong> (or toggle <strong>Demo Mode</strong> to simulate it) to see a step-by-step explanation
+              of how authentication occurs!</p>
+
             <div class="guide-insights">
               <h5>💡 Security & Usability Insights</h5>
               <ul class="insights-list" id="guideStepInsights">
-                <li><strong>No Passwords:</strong> You don't need to create or remember complex characters. Passkeys are stored directly on your device.</li>
-                <li><strong>Biometric Privacy:</strong> Your fingerprint, face scan, or PIN is processed locally on your device. The website and server never see it.</li>
-                <li><strong>Phishing Protection:</strong> Passkeys are cryptographically locked to this specific domain (localhost), protecting you from fake websites.</li>
+                <li><strong>No Passwords:</strong> You don't need to create or remember complex characters. Passkeys are
+                  stored directly on your device.</li>
+                <li><strong>Biometric Privacy:</strong> Your fingerprint, face scan, or PIN is processed locally on your
+                  device. The website and server never see it.</li>
+                <li><strong>Phishing Protection:</strong> Passkeys are cryptographically locked to this specific domain
+                  (localhost), protecting you from fake websites.</li>
               </ul>
             </div>
           </div>
@@ -220,7 +243,8 @@
 
         <!-- Tab 2: Developer Console Payload (Hidden by default) -->
         <div class="mode-content hidden" id="devConsoleArea">
-          <p class="card-desc text-muted">View the exact JSON payloads exchanged under the hood during the WebAuthn ceremony.</p>
+          <p class="card-desc text-muted">View the exact JSON payloads exchanged under the hood during the WebAuthn
+            ceremony.</p>
 
           <div class="payload-tabs">
             <button class="tab-btn active" data-tab="tabOptions">Server Options</button>
@@ -262,7 +286,8 @@
   </main>
 
   <footer class="app-footer">
-    <div class="container footer-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+    <div class="container footer-container"
+      style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
       <div>
         <p>Passkey Usability Study Research Tool &bull; Created for UX and Human-Computer Interaction Analysis</p>
         <p class="version" id="footerVersion">WebAuthn API Core Framework &bull; Port: 3000</p>
@@ -281,4 +306,5 @@
   <!-- Vercel Web Analytics -->
   <script defer src="/_vercel/insights/script.js"></script>
 </body>
+
 </html>

@@ -399,11 +399,6 @@ function renderSignedOut() {
     const isTechVisible = !infoPanel.classList.contains('hidden');
     introCard.classList.toggle('hidden', !isTechVisible);
   }
-  
-  // Auto-switch to Log In tab after logging out
-  if (tabBtnLogin) {
-    tabBtnLogin.click();
-  }
 }
 
 // ----------------------------------------------------
@@ -641,6 +636,10 @@ document.getElementById('btnLogout').addEventListener('click', async () => {
     currentUser = null;
     renderSignedOut();
     resetFlowNodes();
+    // Auto-switch to Log In tab after logging out
+    if (tabBtnLogin) {
+      tabBtnLogin.click();
+    }
   } catch (err) {
     console.error('Logout error:', err);
   }
